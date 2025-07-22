@@ -97,8 +97,8 @@ try {
   // 1つ目のエラー
   {
     code: "invalid_type", // Zodで定義されているエラーコード
-    expected: "string", // 期待される値
-    received: "number", // 実際に渡された値
+    expected: "string", // 期待される型
+    received: "number", // 実際に渡された型
     path: ["name"],
     // エラーが発生した値へのパス この場合はプロパティ名
     message: "Expected string, received number"
