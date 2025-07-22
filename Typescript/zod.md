@@ -29,8 +29,8 @@ name.parse(100); // Error エラーを投げる
 ```
 type Name = z.infer<typeof name>
 
-const myCatName: Name = 'Naoki'; // OK
-const myDogName: Name = 100; // タイプエラー発生
+const myName: Name = 'Naoki'; // OK
+const yourName: Name = 100; // タイプエラー発生
 ```
 
 ### ユースケース
@@ -55,7 +55,7 @@ const user = z.object({
 const myFunc = z.function().args(z.number(), z.string()).returns(z.boolean());
 // -> (arg0: number, arg1: string) => boolean の関数
 
-// もちろん型生成も可能
+// 型生成も可能
 type MyFunc = z.infer<typeof myFunc>;
 const isOverMaxLength: MyFunc = (maxLength, userName) => userName.length > maxLength;
 isOverMaxLength('hoge', 'fuga'); // タイプエラー発生
