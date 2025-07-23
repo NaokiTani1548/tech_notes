@@ -34,7 +34,7 @@ npm install --save-dev typescript ts-node-dev @types/node @types/express
 
 ### BE 側
 
-tRPC ルーター定義
+tRPC ルーター定義(/hello 　 API 実装の場合)
 
 ```
 import { initTRPC } from '@trpc/server';
@@ -92,7 +92,7 @@ import type { AppRouter } from '../../../server/src/router'; // ← サーバー
 export const trpc = createTRPCReact<AppRouter>();
 ```
 
-ページ実装
+ページ実装 （/trpc/getAllArticle API 呼び出しの場合）
 
 ```
 'use client';
