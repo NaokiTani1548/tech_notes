@@ -22,8 +22,136 @@
   - GraphQL スキーマ（どういうデータを返すかを記載した仕様書のようなもの）
   - GraphQL クエリ(ほしいデータを記載したもの →API のリクエストで使う)
 
-- スキーマ例
+### Query
+
+- データ取得に使われるクエリ
+
 ```
+# schema.graphql
+# ルートオペレーション型  ※！は必須パラメータ
+type Query {
+  user: User!
+}
+
+# User型
+type User {
+  id: ID!
+  name: String!
+  email: String!
+}
+```
+
+```
+# user.graphql
+query GetUser {
+  user {
+    id
+    name
+  }
+}
+```
+
+```
+# レスポンス
+{
+  "data": {
+    "user": {
+      "id": "hoge",
+      "name": "foo",
+    }
+  }
+}
+```
+
+### Mutation
+
+- データ更新に使われるクエリ
+
+```
+# schema.graphql
+# ルートオペレーション型
+type Mutation {
+  createUser(data: UserCreateInput!): User!
+}
+
+# User型
+type User {
+  id: ID!
+  name: String!
+  email: String!
+}
+
+# UserCreateInput型
+input UserCreateInput {
+  id: ID
+  name: String!
+  email: String!
+}
+```
+
+```
+# user.graphql
+mutation CreateUser {
+  createUser(data: {
+    name: "hoge",
+    email: "foo@hoge.co.jp"
+  }) {
+    name
+  }
+}
+```
+
+```
+# レスポンス
+{
+  "data": {
+    "createUser": {
+      "name": "hoge",
+    }
+  }
+}
+```
+
+### Fragment
+
+- クエリの一部をフラグメント化して再利用する機能
+- 以下二つは同義
+
+```
+# user.graphql
+query GetUser {
+  hoge_user: user {
+    id
+    name
+  }
+  foo_user: user {
+    id
+    name
+  }
+}
+```
+
+```
+# user.graphql
+query GetUser {
+  hoge_user: user {
+    ...userFragment
+  }
+  foo_user: user {
+    ...userFragment
+  }
+}
+
+fragment userFragment on User {
+   id
+   name
+}
+```
+
+## その他ユースケース
+
+```
+# schema.graphql
 type Query { #Queryは予約語→データ取得を行いたい処理を記載
   getStudents: [students] # Query名(引数):型
 }
@@ -41,9 +169,11 @@ type students { # ←このように独自に型、objectを作る事も可能
   age: Int!
   grade: Int!
 }
+
 ```
-- クエリ例
+
 ```
+# student.graphql
 # <query or mutation> <任意の名前>
 query getStudents {
     name　# 取得したい値のみを選択
