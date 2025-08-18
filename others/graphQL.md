@@ -180,3 +180,67 @@ query getStudents {
     age
 }
 ```
+
+## ベストプラクティス
+
+#### スキーマ定義ファイルに description とよばれるドキュメントを記述する
+
+```
+"""
+Images attached to the check run output displayed in the GitHub pull request UI.
+"""
+input CheckRunOutputImage {
+  """
+  The alternative text for the image.
+  """
+  alt: String!
+
+  """
+  A short image description.
+  """
+  caption: String
+
+  # ...
+}
+```
+
+### 命名
+
+- 一貫性を持たせる
+- 型名は具体的に
+- フィールドでその型名を繰り返さない
+- 入力型と出力型を分けて定義する
+
+```
+type Mutation {
+  createBook(input: CreateBookInput!): Book
+}
+```
+
+- サーバーを作成するとき、パスの最後の部分は /graphql で終わる（推奨）
+
+### フィールド
+
+- String 型よりも具体的な型を使えないか考慮(固定値なら enum で定義など)
+- あるユースケースに特化させる(スキーマ定義で使い方がわかるような引数設定を)
+- 黙的なデフォルト値をリゾルバー内部で定義しない（パラメーターのデフォルト値を設定して、外から動きがわかるように）
+
+### Nullable Non-null
+
+- Non-null(!) -> Nullable は破壊的変更
+- 可能な限り Nullable を用いる（エラー時などに Null が帰ってくる）
+- 何らかの原因で値を返せない可能性があるフィールドは、Nullable
+- フィールドパラメーターはできるだけ Non-null （API の使い方が明確）
+- ※あるオブジェクト型のフィールドであり、そのオブジェクトが存在するときに必ず存在することが分かっているデータあれば、そのフィールドは Non-null で定義することができる（そのフィールドを含むオブジェクト自身は Nullable になり得る）。
+
+```
+type Payment {
+  creditCard: CreaditCard
+  giftCode: String
+}
+
+type CreditCard {
+  number: CreditCardNumber!
+  expiration: CreditCardExpiration!
+}
+```
