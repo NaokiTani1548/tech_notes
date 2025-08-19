@@ -148,7 +148,7 @@ fragment userFragment on User {
 }
 ```
 
-## その他ユースケース
+### その他ユースケース
 
 ```
 # schema.graphql
@@ -182,6 +182,8 @@ query getStudents {
 ```
 
 ## ベストプラクティス
+
+(参照元:https://maku.blog/p/4reqy9i/#description)
 
 #### スキーマ定義ファイルに description とよばれるドキュメントを記述する
 
@@ -244,3 +246,76 @@ type CreditCard {
   expiration: CreditCardExpiration!
 }
 ```
+
+### Mutation
+
+- Mutation には複数の操作を含めることができるが、ロールバックがないためトランザクション単位で実行できるようにフィールドを設計する
+
+### クエリ（クライアント側）
+
+- query や mutation には操作名を付ける
+  - 単一のエンドポイントなので操作名を付けないとサーバーサイドでのロギングで分かりにくくなってしまう
+
+```
+# 操作名：QueryBooks
+query QueryBooks {
+  books { title author }
+}
+```
+
+- クエリドキュメント (query {...}) を静的な (static) クエリ文字列で扱う
+
+  - クエリドキュメントを専用のファイル (.graphql)
+  - avaScript のタグ付きテンプレート (gql'...') など
+
+  ```
+  export const GET_USER = gql`
+    query GetUser {
+      getUser(id: "1") {
+        id
+        name
+      }
+    }
+  ```
+
+- TypeScript の graphql-codegen などで static なクエリドキュメント（とスキーマ定義）から、クエリレスポンスの型情報を自動生成
+
+### リゾルバー実装
+
+- リゾルバー関数の実装はできるだけ短く記述する
+  - データの取得や加工処理といったドメインロジックを分離
+- Apollo サーバーでの実装例(ユニットテストを記述できる設計にすべき)
+
+```
+module.exports = {
+  Query: {
+    launches: (_, __, { dataSources }) => dataSources.launchAPI.getAllLaunches(),
+    launch: (_, { id }, { dataSources }) => dataSources.launchAPI.getLaunchById({ launchId: id }),
+    me: (_, __, { dataSources }) => dataSources.userAPI.findOrCreateUser(),
+  },
+}
+```
+
+- 入れ子構造になったオブジェクトを返す必要があるときは、サブフィールドの処理をそれ専用のリゾルバー関数に委譲
+- サブフィールド用のリゾルバー関数を分けて定義すると、N+1 問題 が発生することがある
+  - DataLoader で連続したデータフェッチをバッチ処理化、キャッシュする
+- データベースのコネクションプールなどをコンテキストで共有することで毎回データベースに接続する手間を省く
+  - ApolloServer インスタンスを生成するときに、context プロパティに任意のコンテキスト生成関数をセット
+
+## 実装パターン
+
+- サインイン済みユーザーを示す me フィールド
+
+  - ユーザーがサインインしていない場合は、me フィールドの値は null になるので、サインイン済みかどうかの判断にも利用できる
+
+  ```
+  type Query {
+    me: User
+    # ...
+  }
+
+  type User {
+    taskList: [Task!]!
+    # ...
+  }
+  ```
